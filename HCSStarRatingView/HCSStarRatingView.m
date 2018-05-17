@@ -180,6 +180,27 @@
     }
 }
 
+- (void)setEmptyImages:(NSArray<UIImage *> *)emptyImages {
+    if (_emptyImages != emptyImages) {
+        _emptyImages = emptyImages;
+        [self setNeedsDisplay];
+    }
+}
+
+-(void)setFullImages:(NSArray<UIImage *> *)fullImages {
+    if (_fullImages != fullImages) {
+        _fullImages = fullImages;
+        [self setNeedsDisplay];
+    }
+}
+
+-(void)setHalfImages:(NSArray<UIImage *> *)halfImages {
+    if (_halfImages != halfImages) {
+        _halfImages = halfImages;
+        [self setNeedsDisplay];
+    }
+}
+
 - (UIColor *)starBorderColor {
     if (_starBorderColor == nil) {
         return self.tintColor;
@@ -195,6 +216,9 @@
 
 
 - (BOOL)shouldUseImages {
+    if (self.emptyImages.count > 0 && self.fullImages.count > 0) {
+        return true;
+    }
     return (self.emptyStarImage!=nil && self.filledStarImage!=nil);
 }
 
@@ -213,20 +237,32 @@
 
 #pragma mark - Image Drawing
 
-- (void)_drawStarImageWithFrame:(CGRect)frame tintColor:(UIColor*)tintColor highlighted:(BOOL)highlighted {
+- (void)_drawStarImageWithFrame:(CGRect)frame tintColor:(UIColor*)tintColor highlighted:(BOOL)highlighted progress:(CGFloat)progress {
     UIImage *image = highlighted ? self.filledStarImage : self.emptyStarImage;
+    if (highlighted) {
+        if (self.fullImages.count > 0) {
+            image = self.fullImages[(int)progress];
+        }
+    } else {
+        if (self.emptyImages.count >0) {
+            image = self.emptyImages[(int)progress];
+        }
+    }
     [self _drawImage:image frame:frame tintColor:tintColor];
 }
 
-- (void)_drawHalfStarImageWithFrame:(CGRect)frame tintColor:(UIColor *)tintColor {
-    [self _drawAccurateHalfStarImageWithFrame:frame tintColor:tintColor progress:.5f];
+- (void)_drawHalfStarImageWithFrame:(CGRect)frame tintColor:(UIColor *)tintColor progress:(CGFloat)progress {
+    [self _drawAccurateHalfStarImageWithFrame:frame tintColor:tintColor progress:progress];
 }
 
 - (void)_drawAccurateHalfStarImageWithFrame:(CGRect)frame tintColor:(UIColor *)tintColor progress:(CGFloat)progress {
     UIImage *image = self.halfStarImage;
+    if (self.halfImages.count >0) {
+        image = self.halfImages[(int)progress];
+    }
     if (image == nil) {
         // first draw star outline
-        [self _drawStarImageWithFrame:frame tintColor:tintColor highlighted:NO];
+        [self _drawStarImageWithFrame:frame tintColor:tintColor highlighted:NO progress:progress];
         
         image = self.filledStarImage;
         CGRect imageFrame = CGRectMake(0, 0, image.size.width * image.scale * progress, image.size.height * image.scale);
@@ -314,25 +350,25 @@
                 [self _drawAccurateStarWithFrame:frame tintColor:self.tintColor progress:_value - idx];
             }
             else {
-                 [self _drawHalfStarWithFrame:frame tintColor:self.tintColor];
+                [self _drawHalfStarWithFrame:frame tintColor:self.tintColor progress:idx];
             }
         } else {
-            [self _drawStarWithFrame:frame tintColor:self.tintColor highlighted:highlighted];
+            [self _drawStarWithFrame:frame tintColor:self.tintColor highlighted:highlighted progress:idx];
         }
     }
 }
 
-- (void)_drawStarWithFrame:(CGRect)frame tintColor:(UIColor *)tintColor highlighted:(BOOL)highlighted {
+- (void)_drawStarWithFrame:(CGRect)frame tintColor:(UIColor *)tintColor highlighted:(BOOL)highlighted progress:(CGFloat)progress {
     if (self.shouldUseImages) {
-        [self _drawStarImageWithFrame:frame tintColor:tintColor highlighted:highlighted];
+        [self _drawStarImageWithFrame:frame tintColor:tintColor highlighted:highlighted progress:progress];
     } else {
         [self _drawStarShapeWithFrame:frame tintColor:tintColor highlighted:highlighted];
     }
 }
 
-- (void)_drawHalfStarWithFrame:(CGRect)frame tintColor:(UIColor *)tintColor {
+- (void)_drawHalfStarWithFrame:(CGRect)frame tintColor:(UIColor *)tintColor progress:(CGFloat)progress {
     if (self.shouldUseImages) {
-        [self _drawHalfStarImageWithFrame:frame tintColor:tintColor];
+        [self _drawHalfStarImageWithFrame:frame tintColor:tintColor progress: progress];
     } else {
         [self _drawHalfStarShapeWithFrame:frame tintColor:tintColor];
     }
