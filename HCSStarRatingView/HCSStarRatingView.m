@@ -414,6 +414,7 @@
     if (!_continuous) {
         [self sendActionsForControlEvents:UIControlEventValueChanged];
     }
+    [self.delegate fingerTouchesEnded];
 }
 
 - (void)cancelTrackingWithEvent:(UIEvent *)event {
@@ -421,6 +422,7 @@
     if (_shouldBecomeFirstResponder && [self isFirstResponder]) {
         [self resignFirstResponder];
     }
+    [self.delegate fingerTouchesEnded];
 }
 
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
